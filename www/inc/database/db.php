@@ -32,6 +32,34 @@ class DB extends PDO {
 		parent::__construct($dsn, $user, $pass);
 	}
 	
+	public function getAllClasses() {
+		return $this->getCollectionFromDatabase('*', 'class', 'Class');
+	}
+	
+	public function getAllUsers() {
+		return $this->getCollectionFromDatabase('*', 'user', 'User');
+	}
+	
+	public function doesUserTypeHavePrivilege($userType, $privilegeName) {
+		$has = false;
+		
+		// Get the privileges for the specific user type
+		$userTypePrivs = $this->getUserTypeById($userType)->privs;
+		
+		// Look up the numeric value for this privilege
+		$priv = $this->getSingleObjectFromDatabase('*', 'priv', 'Priv', 'name', $privilegeName);
+		
+		// If this type has that privilege, flip $has
+		if ($userTypePrivs & $priv->bitvalue) {
+			$has = true;
+		}
+	}
+	
+	
+	
+	
+	
+	
 	protected function getSingleObjectFromDatabase($what, $table, $class, $whereField = null, $whereValue = null) {
 		$returnObject = null;
 		
@@ -146,21 +174,6 @@ class DB extends PDO {
 		}
 
 		return $returnArray;
-	}
-	
-	public function doesUserTypeHavePrivilege($userType, $privilegeName) {
-		$has = false;
-		
-		// Get the privileges for the specific user type
-		$typePrivs = $this->getUserTypeById($userType)->privs;
-		
-		// Look up the numeric value for this privilege
-		$priv = $this->getSingleObjectFromDatabase('*', 'priv', 'Priv', 'name', $privilegeName);
-		
-		// If this type has that privilege, flip $has
-		if ($typePrivs & $priv->bitvalue) {
-			$has = true;
-		}
 	}
 	
 	public function getAssignmentById($assignmentId) {
