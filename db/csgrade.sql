@@ -1,4 +1,4 @@
-# Creates the database for csgrade; assumes database does not exist
+# Creates the database for csgrade, deleting an old one if available
 # Version 1
 
 DROP DATABASE IF EXISTS `csgrade`;
@@ -11,6 +11,8 @@ CREATE TABLE `config` (
 	`adminEmail`		VARCHAR(255),
 	`adminUrl`			VARCHAR(255),
 	`defaultFilePath`	VARCHAR(255),
+	`defaultTheme`		VARCHAR(255) DEFAULT 'default',
+	`siteName`			VARCHAR(255) DEFAULT '',
 	
 	PRIMARY KEY (`dbVersion`)
 );
@@ -117,6 +119,7 @@ CREATE TABLE `user` (
 	`firstName`			VARCHAR(255),
 	`lastName`			VARCHAR(255),
 	`email`				VARCHAR(255),
+	`theme`				VARCHAR(255) DEFAULT 'default',
 	
 	PRIMARY KEY (`id`)
 );
