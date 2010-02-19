@@ -6,11 +6,9 @@
 	unset($_POST['submitted']);
 	
 	// Grab the inputs
-	$id = $_POST['semester']['id'];
-	$name = trim($_POST['semester']['name']);
-	$startDate = trim(reformatDate($_POST['semester']['startDate'], $GLOBALS['datetimeFormat']));
-	$endDate = trim(reformatDate($_POST['semester']['endDate'], $GLOBALS['datetimeFormat']));
-	$desc = $_POST['semester']['description'];
+	$id = $_POST['class']['id'];
+	$name = trim($_POST['class']['name']);
+	$semId = $_POST['class']['semesterId'];
 	
 	// Validate input
 	$errors = array();
@@ -19,16 +17,12 @@
 		$errors['name'] = 'Name cannot be empty';
 	}
 	
-	if (empty($startDate)) {
-		$errors['startDate'] = 'Invalid start date';
-	}
-	
-	if (empty($endDate)) {
-		$errors['endDate'] = 'Invalid end date';
+	if (empty($semId)) {
+		$errors['semesterId'] = 'Must select a semester';
 	}
 	
 	if (!empty($errors)) {
-		$_POST['semester'] = $_POST['semester'];
+		$_POST['class'] = $_POST['class'];
 		$_POST['errors'] = $errors;
 		$_POST['error'] = true;
 	}
@@ -37,14 +31,12 @@
 		$props = array(
 				'id' => $id,
 				'name' => $name,
-				'startDate' => dateToTimestamp($startDate),
-				'endDate' => dateToTimestamp($endDate),
-				'description' => $desc
+				'semesterId' => $semId
 			);
 		
-		// Create a new semester object
-		$semester = new semester($id);
-		$semester->setProps($props);
+		// Create a new class object
+		$class = new singleClass($id);
+		$class->setProps($props);
 		
 		/*
 		echo '<h1>$props</h1>';
@@ -56,14 +48,14 @@
 		die();
 		*/
 		
-		// Update it in the database
-		$success = $semester->update();
+		// Save it to the database
+		$success = $class->update();
 		
 		// Check to see if there were errors; if so, inform the user
 		if (!$success) {
 			$_POST['error'] = true;
 			
- 			$errorArray = $semester->getErrorArray(); 			
+ 			$errorArray = $class->getErrorArray();
  			foreach ($errorArray as $fieldName => $errorMessage) {
  				$_POST['errors'][$fieldName] = $errorMessage;
  			}

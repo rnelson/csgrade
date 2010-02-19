@@ -3,30 +3,30 @@
 	require_once($GLOBALS['rootPath'] . 'inc/inc.php');
 	$themeDir = $GLOBALS['rootPath'] . 'inc/themes/default/';
 		
-	// Grab the semester object
+	// Grab the class object
 	$id = $_GET['id'];
-	$semester = new semester($id);
+	$class = new singleClass($id);
 	
 	// Load the UI
-	$title = 'Admin - Semesters - Delete';
+	$title = 'Admin - Classes - Delete';
 	require_once($GLOBALS['themeDir'] . 'header.php');
 	
-	if (!$semester->id) {
+	if (!$class->id) {
 ?>
 
 <p>
-	<strong>Error:</strong> semester not found.
+	<strong>Error:</strong> class not found.
 </p>
 
 <?php
 	}
 	else {
-		$semesterName = $semester->name;
-		$semester->delete();
+		$className = $class->name;
+		$class->delete();
 ?>
 
 <p>
-	<strong><?php echo $semesterName; ?></strong> was deleted.
+	<strong><?php echo $className; ?></strong> was deleted.
 </p>
 
 <p>

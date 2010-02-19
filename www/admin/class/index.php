@@ -6,22 +6,29 @@
 	$title = 'Admin - Classes';
 	require_once($GLOBALS['themeDir'] . 'header.php');
 	
-	$classes = $GLOBALS['db']->getClasses();
+	$classes = new singleClassList();
+	$classes->load();
 ?>
 
-<p>
-	Classes:
-</p>
+<h1>Classes</h1>
+
 <p>
 	<ol type="1">
 
 <?php
 	foreach ($classes as $class) {
-		echo '<li><a href="' . $GLOBALS['rootPath'] . 'admin/classes/show/?id=' . $class->id . '">' . $class->name . '</a></li>';	
+		$url = $GLOBALS['rootPath'] . 'admin/class/show/?id=' . $class->id;
+		$name = $class->name;
+		
+		echo '<li><a href="' . $url . '">' . $name . '</a></li>';	
 	}
 ?>
 
 	</ol>
+</p>
+
+<p>
+	<a href="new/">Create new class</a>
 </p>
 
 <?php

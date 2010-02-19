@@ -17,7 +17,7 @@
 	require_once($GLOBALS['themeDir'] . 'header.php');
 ?>
 
-<?php if (!$semester) { ?>
+<?php if (!$semester->id) { ?>
 <p>
 	<strong>Error:</strong> semester not found.
 </p>

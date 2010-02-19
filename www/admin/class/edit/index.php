@@ -3,32 +3,24 @@
 	require_once($GLOBALS['rootPath'] . 'inc/inc.php');
 	$themeDir = $GLOBALS['rootPath'] . 'inc/themes/default/';
 	
-	$jqueryCode = <<<EOT
-			$(document).ready(function() {
-				$('#semester-start-date').datepicker();
-				$('#semester-end-date').datepicker();
-			});
-EOT;
-	
 	// Grab the object
-	$semester = new semester();
-	$semester->loadById($_GET['id']);
+	$id = $_GET['id']; 
+	$class = new singleClass();
+	$class->loadById($id);
 	
 	// Set the title
-	if (!$semester->id)
-		$title = 'Admin - Semesters - Semester not found';
+	if (!$class->id)
+		$title = 'Admin - Classes - Class not found';
 	else {
-		$title = 'Admin - Semesters - ' . $semester->name;
+		$title = 'Admin - Classes - ' . $class->name;
 		
-		if (empty($_POST['semester'])) {
+		if (empty($_POST['class'])) {
 			$postArray = array(
-					'id' => $semester->id,
-					'name' => $semester->name,
-					'startDate' => timestampToDate($semester->startDate),
-					'endDate' => timestampToDate($semester->endDate),
-					'description' => $semester->description
+					'id' => $id,
+					'name' => $class->name,
+					'semesterId' => $class->semesterId
 				);
-			$_POST['semester'] = $postArray;
+			$_POST['class'] = $postArray;
 		}
 	}
 	
@@ -37,7 +29,7 @@ EOT;
 	
 	// If we're getting form data, run the code in edit.php
 	if (isset($_POST['submitted'])) {
-		require_once($GLOBALS['rootPath'] . 'admin/semester/edit/edit.php');
+		require_once($GLOBALS['rootPath'] . 'admin/class/edit/edit.php');
 	}
 ?>
 
@@ -50,7 +42,7 @@ EOT;
 		<h3>Errors:</h3>
 		<ol>
 <?php
-		$possibleErrors = array('name', 'startDate', 'endDate');
+		$possibleErrors = array('name', 'semesterId');
 		foreach ($possibleErrors as $error) {
 			if (isset($_POST['errors'][$error])) {
 				echo '<li>' . $_POST['errors'][$error] . '</li>';
@@ -69,7 +61,7 @@ EOT;
 <p>
 	<form action="index.php" method="post" class="form">
 <?php
-	$formTitle = 'Edit Semester';
+	$formTitle = 'Edit Class';
 	$submitLabel = 'Save';
 	require_once('../_form.php');
 ?>
@@ -77,7 +69,7 @@ EOT;
 </p>
 <?php } else { ?>
 <p>
-	Semester updated.
+	Class updated.
 </p>
 
 <p>

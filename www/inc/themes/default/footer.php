@@ -8,7 +8,7 @@
 				-->
 			</div>
 			<div id="footer">
-				<p>Copyright &copy; 2010 Ross Nelson</p>
+				<small>&copy; 2010</small>
 			</div>
 		</div>
 	</body>

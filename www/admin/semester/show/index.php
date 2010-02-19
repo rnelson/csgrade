@@ -4,8 +4,7 @@
 	$themeDir = $GLOBALS['rootPath'] . 'inc/themes/default/';
 	
 	// Grab the object
-	$semester = new semester();
-	$semester->loadById($_GET['id']);
+	$semester = new semester($_GET['id']);
 	
 	// Set the title
 	if (!$semester)
@@ -17,7 +16,7 @@
 	require_once($GLOBALS['themeDir'] . 'header.php');
 ?>
 
-<?php if (!$semester) { ?>
+<?php if (!$semester->id) { ?>
 <p>
 	<strong>Error:</strong> semester not found.
 </p>
@@ -49,7 +48,9 @@
 	</blockquote>
 </p>
 
+<?php if (!empty($classes)) { ?>
 <p>
+	Classes:<br />
 	<ul>
 <?php
 	foreach ($classes as $class) {
@@ -61,6 +62,7 @@
 ?>
 	</ul>
 </p>
+<?php } ?>
 
 <p>
 	<a href="../edit/?id=<?php echo $semester->id; ?>">Edit</a>
