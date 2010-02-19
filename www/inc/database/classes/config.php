@@ -1,6 +1,6 @@
 <?php
 
-require_once($rootPath . 'inc/inc.php');
+require_once($GLOBALS['rootPath'] . 'inc/inc.php');
 
 class Config {
 	public $dbVersion = 0;
@@ -8,6 +8,9 @@ class Config {
 	public $adminEmail = '';
 	public $adminUrl = '';
 	public $defaultFilePath = '';
+	public $defaultTheme = '';
+	public $siteName = '';
+	public $timezone = 'America/Chicago';
 }
 
 ?>

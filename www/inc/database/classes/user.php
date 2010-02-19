@@ -1,6 +1,6 @@
 <?php
 
-require_once($rootPath . 'inc/inc.php');
+require_once($GLOBALS['rootPath'] . 'inc/inc.php');
 
 class User {
 	public $id = 0;

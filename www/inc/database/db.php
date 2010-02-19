@@ -1,18 +1,18 @@
 <?php
 
-require_once($rootPath . 'inc/database/classes/assignment.php');
-require_once($rootPath . 'inc/database/classes/assignmentPart.php');
-require_once($rootPath . 'inc/database/classes/comment.php');
-require_once($rootPath . 'inc/database/classes/config.php');
-require_once($rootPath . 'inc/database/classes/grade.php');
-require_once($rootPath . 'inc/database/classes/priv.php');
-require_once($rootPath . 'inc/database/classes/semester.php');
-require_once($rootPath . 'inc/database/classes/singleClass.php');
-require_once($rootPath . 'inc/database/classes/user.php');
-require_once($rootPath . 'inc/database/classes/userType.php');
+require_once($GLOBALS['rootPath'] . 'inc/database/classes/assignment.php');
+require_once($GLOBALS['rootPath'] . 'inc/database/classes/assignmentPart.php');
+require_once($GLOBALS['rootPath'] . 'inc/database/classes/comment.php');
+require_once($GLOBALS['rootPath'] . 'inc/database/classes/config.php');
+require_once($GLOBALS['rootPath'] . 'inc/database/classes/grade.php');
+require_once($GLOBALS['rootPath'] . 'inc/database/classes/priv.php');
+require_once($GLOBALS['rootPath'] . 'inc/database/classes/semester.php');
+require_once($GLOBALS['rootPath'] . 'inc/database/classes/singleClass.php');
+require_once($GLOBALS['rootPath'] . 'inc/database/classes/user.php');
+require_once($GLOBALS['rootPath'] . 'inc/database/classes/userType.php');
 
 class DB extends PDO {	
-	public function __construct($iniFile = $rootPath . 'inc/database/db.ini') {
+	public function __construct($iniFile	) {
 		// Read in the INI file
 		$settings = parse_ini_file($iniFile, TRUE);
 		if (!$settings) {
@@ -164,7 +164,8 @@ class DB extends PDO {
 			$statement = $this->query($sql);
 
 			// Get the objects out as type $class
-			for ($i = 0; $i < $stmt->rowCount(); $i++) {
+			$objectCount = $statement->rowCount();
+			for ($i = 0; $i < $objectCount; $i++) {
 				$returnArray[] = $statement->fetchObject($class);
 			}
 		}
@@ -181,11 +182,11 @@ class DB extends PDO {
 	}
 	
 	public function getAssignmentsByClassId($classId) {
-		return $this->getCollectionFromDatabase('*', 'assignment', 'Assignment', 'classId', $
+		return $this->getCollectionFromDatabase('*', 'assignment', 'Assignment', 'classId', $classId);
 	}
 	
 	public function getAssignmentPartsByAssignmentId($assignmentId) {
-		return $this->getCollectionFromDatabase('*', 'assignmentPart', 'AssignmentPart', 'assignmentId', $
+		return $this->getCollectionFromDatabase('*', 'assignmentPart', 'AssignmentPart', 'assignmentId', $assignmentId);
 	}
 	
 	public function getAssignmentPartById($assignmentPartId) {
@@ -205,14 +206,18 @@ class DB extends PDO {
 		// Now get all of the class objects
 		$classCount = count($classIds);
 		for ($i = 0; $i < $classCount; $i++) {
-			$classes[] = $this->getSingleObjectFromDatabase('*', 'class', 'Class', 'id', $classIds[$i]);
+			$classes[] = $this->getSingleObjectFromDatabase('*', 'singleClass', 'SingleClass', 'id', $classIds[$i]);
 		}
 		
 		return $classes;
 	}
 	
+	public function getClasses() {
+		return $this->getCollectionFromDatabase('*', 'singleClass', 'SingleClass');
+	}
+	
 	public function getClassesBySemester($semesterId) {
-		return $this->getCollectionFromDatabase('*', 'class', 'Class', 'semesterId', $semesterId);
+		return $this->getCollectionFromDatabase('*', 'singleClass', 'SingleClass', 'semesterId', $semesterId);
 	}
 	
 	public function getCommentById($commentId) {
@@ -262,7 +267,7 @@ class DB extends PDO {
 	}
 	
 	public function getUserById($userId) {
-		return $this->getSingleObjectFromDatabase('*', 'user', 'User', 'id', $
+		return $this->getSingleObjectFromDatabase('*', 'user', 'User', 'id', $userId);
 	}
 	
 	public function getUserTypeById($userTypeId) {

@@ -5,17 +5,18 @@ DROP DATABASE IF EXISTS `csgrade`;
 CREATE DATABASE `csgrade`;
 USE `csgrade`;
 
-CREATE TABLE `config` (
-	`dbVersion`			INTEGER NOT NULL DEFAULT 1,
-	`adminName`			VARCHAR(255) NOT NULL,
-	`adminEmail`		VARCHAR(255),
-	`adminUrl`			VARCHAR(255),
-	`defaultFilePath`	VARCHAR(255),
-	`defaultTheme`		VARCHAR(255) DEFAULT 'default',
-	`siteName`			VARCHAR(255) DEFAULT '',
-	
-	PRIMARY KEY (`dbVersion`)
-);
+#CREATE TABLE `config` (
+#	`dbVersion`			INTEGER NOT NULL DEFAULT 1,
+#	`adminName`			VARCHAR(255) NOT NULL,
+#	`adminEmail`		VARCHAR(255),
+#	`adminUrl`			VARCHAR(255),
+#	`defaultFilePath`	VARCHAR(255),
+#	`defaultTheme`		VARCHAR(255) DEFAULT 'default',
+#	`siteName`			VARCHAR(255) DEFAULT '',
+#	`timezone`			VARCHAR(255) DEFAULT 'America/Chicago',
+#	
+#	PRIMARY KEY (`dbVersion`)
+#);
 
 CREATE TABLE `assignment` (
 	`id`				INTEGER NOT NULL AUTO_INCREMENT,
@@ -89,8 +90,9 @@ CREATE TABLE `priv` (
 CREATE TABLE `semester` (
 	`id`				INTEGER NOT NULL AUTO_INCREMENT,
 	`name`				VARCHAR(255) NOT NULL,
-	`startDate`			DATE NOT NULL,
-	`endData`			DATE NOT NULL,
+	`startDate`			INTEGER NOT NULL,
+	`endDate`			INTEGER NOT NULL,
+	`description`		TEXT,
 	
 	PRIMARY KEY (`id`)
 );
@@ -99,6 +101,7 @@ CREATE TABLE `singleClass` (
 	`id`				INTEGER NOT NULL AUTO_INCREMENT,
 	`name`				VARCHAR(255) NOT NULL,
 	`semesterId`		INTEGER NOT NULL, # -> semester(id)
+	`hidden`			TINYINT(1),
 	
 	PRIMARY KEY (`id`)
 );
@@ -131,3 +134,5 @@ CREATE TABLE `userType` (
 	
 	PRIMARY KEY (`id`)
 );
+
+#INSERT INTO `config` VALUES (1, 'Ross Nelson', 'rnelson@cse.unl.edu', 'http://cse.unl.edu/~rnelson', '', 'default', 'csgrade', 'America/Chicago');
