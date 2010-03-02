@@ -1,4 +1,5 @@
 #!/usr/bin/python
+from __future__ import with_statement
 import os
 import sys
 import subprocess
@@ -18,6 +19,7 @@ globals = {
 
 def getLab():
 	return {
+		'complete':  False,
 		'num':       '',
 		'name':      '',
 		'shortname': '',
@@ -30,6 +32,7 @@ def getLabPart():
 	return {
 		'name':      '',
 		'source':    '',
+		'sources':   None,
 		'binary':    '',
 		'type':      '',
 		'matchtype': '',
@@ -44,7 +47,8 @@ def getGradeRet():
 		'result':     '',
 		'compOutput': '',
 		'runOutput':  '',
-		'diffOutput': ''
+		'diffOutput': '',
+		'solOutput':  ''
 	}
 
 def getCompileRet():
@@ -59,6 +63,13 @@ def getRunRet():
 		'command': '',
 		'result':  '',
 		'retval':  ''
+	}
+
+def getDiffRet():
+	return {
+		'diffLines': '',
+		'result':    '',
+		'same':      ''
 	}
 
 def getLabDir(lab):
@@ -77,6 +88,7 @@ lab7part1['type'] = 'intmatch'
 lab7part1['matchtype'] = 'static'
 lab7part1['solution'] = 681
 lab7 = getLab()
+#lab7['complete'] = True
 lab7['num'] = 7
 lab7['name'] = 'Week 7'
 lab7['shortname'] = 'wk7'
@@ -88,10 +100,12 @@ lab7['parts'].append(lab7part1)
 lab8part1 = getLabPart()
 lab8part1['name'] = 'ex1'
 lab8part1['source'] = 'week8.f95'
+lab8part1['sources'] = [ '~cse150efl/files/week8-main.f95' ]
 lab8part1['binary'] = 'a.out'
 lab8part1['type'] = 'binmatch'
 lab8part1['solbin'] = getBinaryPath('week8-reference')
 lab8 = getLab()
+lab8['complete'] = True
 lab8['num'] = 8
 lab8['name'] = 'Week 8'
 lab8['shortname'] = 'wk8'
@@ -101,12 +115,15 @@ lab8['parts'] = []
 lab8['parts'].append(lab8part1)
 
 assignments = []
+for i in xrange(6):
+	assignments.append(getLab())
 assignments.append(lab7)
 assignments.append(lab8)
 
 
 # Deal with command line arguments
 grading = False
+verbose = False
 assignment = len(assignments) # default assignment
 
 # TODO: this should be replaced with OptParse stuff
@@ -123,6 +140,8 @@ if len(sys.argv) > 1:
 		if arg.startswith('-'):
 			if arg == '-g':
 				grading = True
+			if arg == '-v':
+				verbose = True
 		else:
 			# If it's not a flag, it's an argument number
 			try:
@@ -161,6 +180,15 @@ def findLab(number):
 	
 	return None
 
+def buildFileList(studentSource, part):
+	fileList = studentSource
+	
+	if part['sources'] != None:
+		for f in part['sources']:
+			fileList = fileList + ' ' + f
+	
+	return fileList
+
 def compile(student, lab, part, bin, src, showOutput=False, outputFilename='', compiler=globals['compiler']):
 	ret = getCompileRet()
 	
@@ -169,10 +197,14 @@ def compile(student, lab, part, bin, src, showOutput=False, outputFilename='', c
 		ret['retval'] = -1
 		ret['result'] = '(-) "' + src + '" does not exist'
 		ret['output'] = ''
+		
+		if verbose:
+			print ret['result']
+		
 		return ret
 	
 	# Base compilation command
-	command = compiler + ' -o ' + bin + ' ' + src
+	command = compiler + ' -o ' + bin + ' ' + buildFileList(src, part)
 	
 	# What do we do with the output?
 	out = ''
@@ -200,6 +232,9 @@ def compile(student, lab, part, bin, src, showOutput=False, outputFilename='', c
 		ret['result'] = '( ) Compiled'
 	else:
 		ret['result'] = '(-) Compilation error'
+	
+	if verbose:
+		print student + '/' + lab['shortname'] + part['name'] + ':  ' + ret['result']
 	
 	# If the user requested output saved to a file, we need to get it from two files into one
 	if showOutput and outputFilename != '':
@@ -247,6 +282,9 @@ def run(student, lab, part, bin, showOutput=False, outputFilename=''):
 		ret['result'] = '( ) Ran successfully'
 	else:
 		ret['result'] = '(-) Program crashed'
+	
+	if verbose:
+		print student + '/' + lab['shortname'] + part['name'] + ':  ' + ret['result']
 
 	# If the user requested output saved to a file, we need to get it from two files into one
 	if showOutput and outputFilename != '':
@@ -263,6 +301,93 @@ def run(student, lab, part, bin, showOutput=False, outputFilename=''):
 		stderrFile.close()
 		outfile.close()
 
+	return ret
+
+def dualRead(file1, file2):
+	o = open(file1, 'r')
+	t = open(file2, 'r')
+	
+	return o, t
+
+def dualClose(file1, file2):
+	file1.close()
+	file2.close()
+
+def diff(student, lab, part, userFile, solFile):
+	ret = getDiffRet()
+	ret['diffLines'] = 0
+	ret['result'] = ''
+	ret['same'] = False
+	
+	runres = 'Wrong output'
+	
+	try:			
+		# Count the lines in each file
+		f, s = dualRead(userFile, solFile)
+		fCount = 0
+		sCount = 0
+		for line in f:
+			fCount = fCount + 1
+		for line in s:
+			sCount = sCount + 1
+		dualClose(f, s)
+		
+		ret['diffLines'] = abs(fCount - sCount)
+		
+		# If the user has verbose mode turned on, show the contents
+		# of the two files
+		if verbose:
+			f, s = dualRead(userFile, solFile)
+			
+			print student + '/' + lab['shortname'] + part['name'] + ':  ( ) ' + str(fCount) + ' lines in your output'
+			for line in f:
+				print '  ' + line.rstrip()
+			
+			print student + '/' + lab['shortname'] + part['name'] + ':  ( ) ' + str(sCount) + ' lines in solution'
+			for line in s:
+				print '  ' + line.rstrip()
+		
+		# Now, see if the contents are the same
+		same = True
+		if fCount != sCount:
+			same = False
+			
+			if verbose:
+				pt1 = student + '/' + lab['shortname'] + part['name'] + ':  (-) Line counts differ: '
+				pt2 = str(fCount) + ' vs ' + str(sCount)
+				print pt1 + pt2
+		else:
+			f, s = dualRead(userFile, solFile)
+							
+			for i in xrange(fCount):
+				fLine = f.readline()
+				sLine = s.readline()
+				
+				if fLine != sLine:
+					same = False
+					
+					if verbose:
+						print student + '/' + lab['shortname'] + part['name'] + ':  (-) Lines differ:'
+						print ' >"' + fLine + '"'
+						print ' >"' + sLine + '"'
+					
+					break
+			
+			dualClose(f, s)
+		
+		if same:
+			runres = 'Correct'
+		
+		ret['same'] = same
+	except Exception, e:
+		ret['same'] = False
+		runres = 'Exception thrown comparing files: ' + e.message #str(sys.exc_info()[0])
+	
+	if ret['same']:
+		ret['result'] = '(+) Correct'
+	else:
+		ret['result'] = '(-) ' + runres
+	
 	return ret
 
 
@@ -318,10 +443,8 @@ def gradeIntmatch(student, lab, part, solution):
 		
 				if number == solution:
 					runres = '(+) Correct'
-			except:
-				pass
-		
-			f.close()
+			finally:
+				f.close()
 		except:
 			pass
 		
@@ -329,17 +452,134 @@ def gradeIntmatch(student, lab, part, solution):
 	
 	return ret
 
+def gradeTxtmatch(student, lab, part, solutionFile):
+	# Variables
+	ret = getGradeRet()
+	ldir = lab['dir']
+	binpath = part['binary']
+	srcpath = part['source']
+	compRet = getCompileRet()
+	runRet = getRunRet()
+	
+	if grading:
+		binpath = os.path.join(ldir, part['binary'])
+		srcpath = os.path.join(ldir, part['source'])
+	
+	# Compile the code
+	if grading:
+		compRet = compile(student, lab, part, binpath, srcpath)
+	else:
+		ret['compOutput'] = mktmpnam()
+		compRet = compile(student, lab, part, binpath, srcpath, True, ret['compOutput'])
+	
+	# If it didn't error out, run it
+	if compRet['retval'] != 0:
+		ret['result'] = compRet['result']
+		ret['output'] = ret['compOutput']
+		
+		if ret['result'] == '(-) "' + srcpath + '" does not exist':
+			ret['output'] = ''
+		return ret
+	else:
+		# We want to save the output to a file in all cases since we'll be
+		# determining correctness by reading from it
+		ret['runOutput'] = mktmpnam()
+		runRet = run(student, lab, part, binpath, True, ret['runOutput'])
+	
+	# Did the program run correctly?
+	if runRet['retval'] != 0:
+		ret['result'] = runRet['result']
+		ret['output'] = ret['runOutput']
+		return ret
+	else:
+		ret['output'] = None
+		d = diff(student, lab, part, solutionFile, ret['runOutput'])
+		ret['result'] = d['result']
+	
+	return ret
 
+def gradeBinmatch(student, lab, part):
+	ret = getGradeRet()
+	
+	# Get a filename to save the output to
+	solOutput = mktmpnam()
+	ret['solOutput'] = solOutput
+	
+	# Run the solution program
+	command = part['solbin'] + ' > ' + solOutput
+	binrunret = subprocess.call(command, shell=True)
+	
+	if verbose:
+		print student + '/' + lab['shortname'] + part['name'] + ':  ' + '( ) Binrunret = ' + str(binrunret)
+	
+	# Grade
+	ret = gradeTxtmatch(student, lab, part, solOutput)
+	
+	# Done
+	unlink(solOutput)
+	return ret
 
-
-
-
-
-
-
-
-
-###############################
+def grade(student, lab, grading=False):
+	res = []
+	
+	for part in lab['parts']:
+		ret = None
+		pType = part['type']
+		
+		if pType == 'binmatch':
+			# Compile + run the code
+			ret = gradeBinmatch(student, lab, part)
+		elif pType == 'txtmatch':
+			# Compile + run the code
+			ret = gradeTxtmatch(student, lab, part, solutionFile)
+		elif pType == 'intmatch':
+			solution = None
+			
+			if part['matchtype'] == 'bin':
+				out = mktmpnam()
+				command = part['solbin'] + ' > ' + out
+				subprocess.call(command, shell=True)
+				
+				f = open(out, 'r')
+				solution = int(f.read())
+				f.close()
+			elif part['matchtype'] == 'txt':
+				f = open(part['soltxt'], 'r')
+				solution = int(f.read())
+				f.close()
+			elif part['matchtype'] == 'static':
+				solution = part['solution']
+			
+			# Compile + run the code
+			ret = gradeIntmatch(student, lab, part, solution)
+		else:
+			print 'Error: don\'t know how to grade ' + lab['name'] + ' ' + part['name']
+			sys.exit(3)
+		
+		# Get (and maybe print) the results
+		resStr = student + '/' + lab['shortname'] + part['name'] + ':  ' + ret['result']
+		res.append(resStr)
+		
+		if not grading:
+			print resStr
+			
+			if ret['output'] != None and ret['output'] != '':
+				print ''
+				print 'Output:'
+			
+				# There was an error somewhere; print the file contents
+				f = open(ret['output'], 'r')
+				for line in f:
+					print '   ' + line.rstrip()
+				f.close()
+		
+		# Clean up the files we used
+		unlink(ret['compOutput'])
+		unlink(ret['runOutput'])
+		unlink(ret['diffOutput'])
+		unlink(ret['solOutput'])
+	
+	return res
 
 if __name__ == '__main__':
 	# Find the lab we want to check
@@ -348,78 +588,28 @@ if __name__ == '__main__':
 		print 'Error: cannot find lab structure; notify ' + globals['instructor']
 		sys.exit(2)
 	
+	if not lab['complete']:
+		print 'Error: lab cannot be tested with test.py'
+		sys.exit(3)
+	
 	# Do the actual testing/grading
 	if not grading:
 		student = os.environ.get('USER')
-		ret = None
-		
-		for part in lab['parts']:
-			pType = part['type']
-			
-			if pType == 'binmatch':
-				pass
-			elif pType == 'txtmatch':
-				pass
-			elif pType == 'intmatch':
-				solution = None
-				
-				if part['matchtype'] == 'bin':
-					out = mktmpnam()
-					command = part['solbin'] + ' > ' + out
-					subprocess.call(command, shell=True)
-					
-					f = open(out, 'r')
-					solution = int(f.read())
-					f.close()
-				elif part['matchtype'] == 'txt':
-					f = open(part['soltxt'], 'r')
-					solution = int(f.read())
-					f.close()
-				elif part['matchtype'] == 'static':
-					solution = part['solution']
-				
-				# Compile + run the code
-				ret = gradeIntmatch(student, lab, part, solution)
-			else:
-				print 'Error: don\'t know how to grade ' + lab['name'] + ' ' + part['name']
-				sys.exit(3)
-			
-			
-			# Print the results
-			print student + '/' + lab['shortname'] + part['name'] + ':  ' + ret['result']
-			
-			if ret['output'] != None and ret['output'] != '':
-				print ''
-				print 'Output:'
-				
-				# There was an error somewhere; print the file contents
-				f = open(ret['output'], 'r')
-				for line in f:
-					print '   ' + line.rstrip()
-				f.close()
-			
-			
-			# Clean up the files we used
-			unlink(ret['compOutput'])
-			unlink(ret['runOutput'])
-			unlink(ret['diffOutput'])
+		grade(student, lab, False)
 	else:
-		for d in os.listdir(ASSDIR):
-			if os.path.isdir(os.path.join(ASSDIR, d)):
-				student = d
-				sdir = os.path.join(ASSDIR, d)
-			
-				if exists(os.path.join(sdir, ex1source)):
-					gradeEx1(sdir)
-				else:
-					grades.append(student + ': (ex1) MISSING')
-			
-				if exists(os.path.join(sdir, ex2source)):
-					gradeEx2(sdir)
-				else:
-					grades.append(student + ': (ex2) MISSING')
-	
-		print ''
+		print 'Error: grade mode untested'
+		sys.exit(4)
+		
+		grades = []
+		labdir = lab['dir']
+		
+		for d in os.listdir(labdir):
+			if os.path.isdir(os.path.join(labdir, d)):
+				studentRes = grade(student, lab, True)
+				
+				for res in studentRes:
+					grades.append(res)
+		
 		grades.sort()
 		for g in grades:
 			print g
