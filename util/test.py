@@ -9,12 +9,14 @@ import tempfile
 # Script configuration
 globals = {
 	'name':       'cse@unl tester',
-	'version':    '0.0.1',
+	'version':    '0.0.2',
 	'author':     'Ross Nelson <rnelson@cse>',
+	'copyright':  'Copyright (C) 2010 Ross Nelson',
+	'license':    'BSD License (http://opensource.org/licenses/bsd-license.php)',
 	'compiler':   '/usr/bin/gfortran',
-	'root':       '/home/grad/Classes_102/cse150efl/webhandin',
 	'homedir':    '/home/grad/Classes_102/cse150efl',
-	'instructor': 'Ross'
+	'root':       '/home/grad/Classes_102/cse150efl/webhandin',
+	'instructor': 'Ross Nelson'
 }
 
 def getLab():
@@ -113,18 +115,37 @@ lab8['numparts'] = 1
 lab8['dir'] = getLabDir('8')
 lab8['parts'] = []
 lab8['parts'].append(lab8part1)
+## Lab 9
+lab9part1 = getLabPart()
+lab9part1['name'] = 'ex1'
+lab9part1['source'] = 'week9.f95'
+lab9part1['sources'] = [ '~cse150efl/files/week9-main.f95' ]
+lab9part1['binary'] = 'a.out'
+lab9part1['type'] = 'binmatch'
+lab9part1['solbin'] = getBinaryPath('week9-reference')
+lab9 = getLab()
+lab9['complete'] = True
+lab9['num'] = 9
+lab9['name'] = 'Week 9'
+lab9['shortname'] = 'wk9'
+lab9['numparts'] = 1
+lab9['dir'] = getLabDir('9')
+lab9['parts'] = []
+lab9['parts'].append(lab9part1)
 
 assignments = []
-for i in xrange(6):
-	assignments.append(getLab())
+#for i in xrange(6):
+#	assignments.append(getLab())
 assignments.append(lab7)
 assignments.append(lab8)
+assignments.append(lab9)
 
 
 # Deal with command line arguments
 grading = False
 verbose = False
-assignment = len(assignments) # default assignment
+showHelp = False
+assignment = None # len(assignments) # default assignment
 
 # TODO: this should be replaced with OptParse stuff
 if len(sys.argv) > 1:
@@ -142,6 +163,8 @@ if len(sys.argv) > 1:
 				grading = True
 			if arg == '-v':
 				verbose = True
+			if arg == '-h' or arg == '--help':
+				showHelp = True
 		else:
 			# If it's not a flag, it's an argument number
 			try:
@@ -581,11 +604,40 @@ def grade(student, lab, grading=False):
 	
 	return res
 
+def about():
+	print globals['name'] + ' ' + globals['version']
+	print globals['author']
+	print 'Licensed under ' + globals['license']
+	print ''
+	print 'Instructor:            ' + globals['instructor']
+	print 'Compiler:              ' + globals['compiler']
+	print 'Home directory:        ' + globals['homedir']
+	print 'Code root directory:   ' + globals['root']
+	print ''
+	print ''
+
+def help():
+	print 'usage: ' + __file__ + ' [options] lab'
+	print '   -h | --help:     Show this help'
+	print '   -g:              Use grading mode (instructor only)'
+	print '   -v:              Use verbose mode'
+	print ''
+	print '"lab" is the number for the lab you wish to test. You can'
+	print 'obtain a list of valid numbers from your instructor (see'
+	print 'instructor information above).'
+
 if __name__ == '__main__':
+	# If they requested help, regardless of other flags, show that and quit
+	if showHelp:
+		about()
+		help()
+		sys.exit(0)
+	
 	# Find the lab we want to check
 	lab = findLab(assignment)
 	if lab == None:
-		print 'Error: cannot find lab structure; notify ' + globals['instructor']
+		print 'Error: that lab does not exist'
+		#print 'Error: cannot find lab structure; notify ' + globals['instructor']
 		sys.exit(2)
 	
 	if not lab['complete']:
