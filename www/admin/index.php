@@ -7,7 +7,13 @@
 	require_once($GLOBALS['themeDir'] . 'header.php');
 ?>
 
-Hi from /admin
+<ol>
+	<li><a href="priv/">Privileges</a></li>
+	<li><a href="userType/">User Types</a></li>
+	<li><a href="user/">Users</a></li>
+	<li><a href="semester/">Semesters</a></li>
+	<li><a href="class/">Classes</a></li>
+</ol>
 
 <?php
 	require_once($GLOBALS['themeDir'] . 'footer.php');

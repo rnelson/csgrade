@@ -100,28 +100,6 @@ a:active {
 	table-layout: auto;
 }
 
-.syllabus-header {
-	font-size: x-large;
-	text-align: center;
-	font-weight: bold;
-	line-height: 25px;
-	margin-top: 10px;
-	margin-bottom: 30px;
-}
-
-.syllabus-section-header {
-	border-bottom: 1px solid black;
-	font-size: medium;
-	padding-bottom: -3px;
-}
-
-.syllabus-section-text {
-	font-size: small;
-	line-height: 16px;
-	margin-top: 5px;
-	margin-bottom: 20px;
-}
-
 .code {
 	background-color: #ECECEC;
 	border: 1px solid black;
@@ -139,7 +117,7 @@ a:active {
 
 .form {
 	border: 1px solid #ececec;
-	width: 20em;
+	width: 25em;
 }
 
 .form legend {
@@ -150,6 +128,13 @@ a:active {
 	position: relative;
 	display: block;
 	left: 0;
+}
+
+.form-element-indent {
+	position: relative;
+	display: block;
+	left: 90px;
+	top: -20px;
 }
 
 .form-element-field {

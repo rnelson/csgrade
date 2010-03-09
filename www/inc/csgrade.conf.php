@@ -23,6 +23,11 @@ define('DEFAULT_THEME', 'default');
 // File upload configuration
 define('DEFAULT_UPLOAD_FILE_DIR', '/Users/rnelson/Sites/csgrade/www/upload');
 
+// Privilege configuration -- make sure these match csgrade.sql
+define('GUEST_PRIV', 1);
+define('USER_PRIV', 2);
+define('ADMIN_PRIV', 4);
+
 // Timezone
 date_default_timezone_set('America/Chicago');
 

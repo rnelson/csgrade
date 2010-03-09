@@ -2,9 +2,18 @@
 	$GLOBALS['rootPath'] = '../../../';
 	require_once($GLOBALS['rootPath'] . 'inc/inc.php');
 	
+	// Unset the submitted flag
+	unset($_POST['submitted']);
+	
 	// Grab the inputs
-	$name = trim($_POST['class']['name']);
-	$semId = $_POST['class']['semesterId'];
+	$id = $_POST['userType']['id'];
+	$name = trim($_POST['userType']['name']);
+	
+	// We have to deal with privileges separately
+	$privs = 1;
+	foreach ($_POST['privs'] as $bitmask) {
+		$privs |= $bitmask;
+	}
 	
 	// Validate input
 	$errors = array();
@@ -12,35 +21,32 @@
 	if (empty($name)) {
 		$errors['name'] = 'Name cannot be empty';
 	}
-	
-	if (empty($semId)) {
-		$errors['semesterId'] = 'Must select a semester';
-	}
-	
+		
 	if (!empty($errors)) {
-		$_POST['class'] = $_POST['class'];
+		$_POST['userType'] = $_POST['userType'];
 		$_POST['errors'] = $errors;
 		$_POST['error'] = true;
 	}
 	else {
 		// Grab the user input and get it into a format that matches what the DB expects
 		$props = array(
+				'id' => $id,
 				'name' => $name,
-				'semesterId' => $semId
+				'privs' => $privs
 			);
 		
-		// Create a new class object
-		$class = new singleClass();
-		$class->setProps($props);
+		// Find the userType object
+		$userType = new userType($id);
+		$userType->setProps($props);
 		
-		// Add it to the database
-		$success = $class->insert();
+		// Update it in the database
+		$success = $userType->update();
 		
 		// Check to see if there were errors; if so, inform the user
 		if (!$success) {
 			$_POST['error'] = true;
 			
- 			$errorArray = $class->getErrorArray(); 			
+ 			$errorArray = $userType->getErrorArray(); 			
  			foreach ($errorArray as $fieldName => $errorMessage) {
  				$_POST['errors'][$fieldName] = $errorMessage;
  			}

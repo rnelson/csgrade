@@ -40,6 +40,7 @@
 			<div id="nav">
 				<ul>
 					<li><a href="<?php echo $GLOBALS['rootPath'] ?>index.php">Home</a> |</li>
+					<li><a href="<?php echo $GLOBALS['rootPath'] ?>admin/index.php">Admin</a></li>
 					<!--
 					
 					<li><a href="<?php echo $GLOBALS['rootPath'] ?>schedule.php">Schedule</a> |</li>
