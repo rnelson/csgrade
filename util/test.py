@@ -652,7 +652,7 @@ def gradeMakeRun(student, lab, part):
 		ret['result'] = compRet['result']
 		ret['output'] = ret['compOutput']
 		
-		if ret['result'] == '(-) "' + srcpath + '" does not exist':
+		if ret['result'] == '(-) "' + part['source'] + '" does not exist':
 			ret['output'] = ''
 		return ret
 	#else:
