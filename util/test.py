@@ -14,6 +14,7 @@ globals = {
 	'copyright':  'Copyright (C) 2010 Ross Nelson',
 	'license':    'BSD License (http://opensource.org/licenses/bsd-license.php)',
 	'compiler':   '/usr/bin/gfortran',
+	'make':       '/usr/bin/make',
 	'homedir':    '/home/grad/Classes_102/cse150efl',
 	'root':       '/home/grad/Classes_102/cse150efl/webhandin',
 	'instructor': 'Ross Nelson'
@@ -40,7 +41,8 @@ def getLabPart():
 		'matchtype': '',
 		'solbin':    '',
 		'soltxt':    '',
-		'solution':  ''
+		'solution':  '',
+		'Makefile':  ''
 	}
 
 def getGradeRet():
@@ -132,6 +134,22 @@ lab9['numparts'] = 1
 lab9['dir'] = getLabDir('9')
 lab9['parts'] = []
 lab9['parts'].append(lab9part1)
+## Lab 10
+lab10part1 = getLabPart()
+lab10part1['name'] = 'ex1'
+lab10part1['source'] = 'week10.f95'
+lab10part1['Makefile'] = '/home/grad/Classes_102/cse150efl/files/Makefile.week10'
+lab10part1['binary'] = 'week10'
+lab10part1['type'] = 'make-run'
+lab10 = getLab()
+lab10['complete'] = True
+lab10['num'] = 10
+lab10['name'] = 'Week 10'
+lab10['shortname'] = 'wk10'
+lab10['numparts'] = 1
+lab10['dir'] = getLabDir('10')
+lab10['parts'] = []
+lab10['parts'].append(lab10part1)
 
 assignments = []
 #for i in xrange(6):
@@ -139,6 +157,7 @@ assignments = []
 assignments.append(lab7)
 assignments.append(lab8)
 assignments.append(lab9)
+assignments.append(lab10)
 
 
 # Deal with command line arguments
@@ -212,6 +231,70 @@ def buildFileList(studentSource, part):
 	
 	return fileList
 
+def make(student, lab, part, src, showOutput=False, outputFilename='', make=globals['make']):
+	ret = getCompileRet()
+	
+	# If the file doesn't exist, save time and flag it as such here
+	if not exists(src):
+		ret['retval'] = -1
+		ret['result'] = '(-) "' + src + '" does not exist'
+		ret['output'] = ''
+		
+		if verbose:
+			print ret['result']
+		
+		return ret
+	
+	# Base compilation command
+	command = 'make -f ' + part['Makefile'] + ' clean >/dev/null 2>/dev/null && make -f ' + part['Makefile']
+	
+	# What do we do with the output?
+	out = ''
+	outStdout = ''
+	outStderr = ''
+	
+	if not showOutput:
+		out = '>/dev/null'
+	else:
+		outStdout = mktmpnam()
+		outStderr = mktmpnam()
+		
+		out = '>' + outStdout + ' 2>' + outStderr
+	command = command + ' ' + out
+	
+	# Save the command used
+	ret['command'] = command
+	
+	# Compile the code
+	retval = subprocess.call(command, shell=True)
+	ret['retval'] = retval
+	
+	# Log the results
+	if retval == 0:
+		ret['result'] = '( ) Made'
+	else:
+		ret['result'] = '(-) Make failed'
+	
+	if verbose:
+		print student + '/' + lab['shortname'] + part['name'] + ':  ' + ret['result']
+	
+	# If the user requested output saved to a file, we need to get it from two files into one
+	if showOutput and outputFilename != '':
+		stdoutFile = open(outStdout, 'r')
+		stderrFile = open(outStderr, 'r')
+		outfile = open(outputFilename, 'w')
+		
+		for line in stdoutFile:
+			outfile.write(line)
+		for line in stderrFile:
+			outfile.write(line)
+		
+		stdoutFile.close()
+		stderrFile.close()
+		outfile.close()
+	
+	return ret
+
 def compile(student, lab, part, bin, src, showOutput=False, outputFilename='', compiler=globals['compiler']):
 	ret = getCompileRet()
 	
@@ -281,6 +364,12 @@ def run(student, lab, part, bin, showOutput=False, outputFilename=''):
 
 	# Base command
 	command = bin
+	
+	# Is verbose mode on? If so, pass that on to the binary (assume -v for it as well)
+	v = ''
+	if verbose:
+		v = '-v'
+	command = command + ' ' + v
 
 	# What do we do with the output?
 	out = ''
@@ -542,6 +631,54 @@ def gradeBinmatch(student, lab, part):
 	unlink(solOutput)
 	return ret
 
+def gradeMakeRun(student, lab, part):
+	# Variables
+	ret = getGradeRet()
+	ldir = lab['dir']
+	binpath = part['binary']
+	
+	compRet = getCompileRet()
+	runRet = getRunRet()
+	
+	# Compile the code
+	if grading:
+		compRet = make(student, lab, part, binpath, srcpath)
+	else:
+		ret['compOutput'] = mktmpnam()
+		compRet = make(student, lab, part, part['source'], True, ret['compOutput'])
+	
+	# If it didn't error out, run it
+	if compRet['retval'] != 0:
+		ret['result'] = compRet['result']
+		ret['output'] = ret['compOutput']
+		
+		if ret['result'] == '(-) "' + srcpath + '" does not exist':
+			ret['output'] = ''
+		return ret
+	#else:
+		## We want to save the output to a file in all cases since we'll be
+		## determining correctness by reading from it
+		#ret['runOutput'] = mktmpnam()
+		#print student + '/' + lab['shortname'] + part['name'] + ':  ( ) Output:'
+		#print '          -----------------'
+		#runRet = run(student, lab, part, binpath, True, ret['runOutput'])
+		#print '          -----------------'
+	#
+	## Did the program run correctly?
+	#if runRet['retval'] != 0:
+	#	ret['result'] = runRet['result']
+	#	ret['output'] = ret['runOutput']
+	#	return ret
+	#else:
+	#	ret['output'] = None
+	#	runres = '( ) Program ran (cannot automatically determine correctness)'
+	#	ret['result'] = runres
+	
+	ret['output'] = None
+	ret['result'] = '( ) Program cannot be run automatically; run "' + part['binary'] + '" manually'
+	
+	return ret
+
 def grade(student, lab, grading=False):
 	res = []
 	
@@ -575,6 +712,8 @@ def grade(student, lab, grading=False):
 			
 			# Compile + run the code
 			ret = gradeIntmatch(student, lab, part, solution)
+		elif pType == 'make-run':
+			ret = gradeMakeRun(student, lab, part)
 		else:
 			print 'Error: don\'t know how to grade ' + lab['name'] + ' ' + part['name']
 			sys.exit(3)
