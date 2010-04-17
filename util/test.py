@@ -1,5 +1,7 @@
 #!/usr/bin/python
 from __future__ import with_statement
+import getpass
+import hashlib
 import os
 import sys
 import subprocess
@@ -17,7 +19,8 @@ globals = {
 	'make':       '/usr/bin/make',
 	'homedir':    '/home/grad/Classes_102/cse150efl',
 	'root':       '/home/grad/Classes_102/cse150efl/webhandin',
-	'instructor': 'Ross Nelson'
+	'instructor': 'Ross Nelson',
+	'gradepass':  '5ab6f1f6d66f169ce64ea565309d2cdd0e1dd283'
 }
 
 def getLab():
@@ -141,6 +144,13 @@ lab10part1['source'] = 'week10.f95'
 lab10part1['Makefile'] = '/home/grad/Classes_102/cse150efl/files/Makefile.week10'
 lab10part1['binary'] = 'week10'
 lab10part1['type'] = 'make-run'
+lab10part2 = getLabPart()
+lab10part2['name'] = 'ex2'
+lab10part2['source'] = 'week11.f95'
+lab10part2['sources'] = [ '~cse150efl/files/week11-main.f95' ]
+lab10part2['binary'] = 'a.out'
+lab10part2['type'] = 'binmatch'
+lab10part2['solbin'] = getBinaryPath('week11-reference')
 lab10 = getLab()
 lab10['complete'] = True
 lab10['num'] = 10
@@ -150,6 +160,7 @@ lab10['numparts'] = 1
 lab10['dir'] = getLabDir('10')
 lab10['parts'] = []
 lab10['parts'].append(lab10part1)
+lab10['parts'].append(lab10part2)
 
 assignments = []
 #for i in xrange(6):
@@ -325,6 +336,10 @@ def compile(student, lab, part, bin, src, showOutput=False, outputFilename='', c
 		
 		out = '>' + outStdout + ' 2>' + outStderr
 	command = command + ' ' + out
+	
+	# Hide output if grading
+	if grading:
+		command = command + ' >/dev/null 2>/dev/null'
 	
 	# Save the command used
 	ret['command'] = command
@@ -508,14 +523,15 @@ def gradeIntmatch(student, lab, part, solution):
 	# Variables
 	ret = getGradeRet()
 	ldir = lab['dir']
+	studentDir = os.path.join(ldir, student)
 	binpath = part['binary']
 	srcpath = part['source']
 	compRet = getCompileRet()
 	runRet = getRunRet()
 	
 	if grading:
-		binpath = os.path.join(ldir, part['binary'])
-		srcpath = os.path.join(ldir, part['source'])
+		binpath = os.path.join(studentDir, part['binary'])
+		srcpath = os.path.join(studentDir, part['source'])
 	
 	# Compile the code
 	if grading:
@@ -568,14 +584,15 @@ def gradeTxtmatch(student, lab, part, solutionFile):
 	# Variables
 	ret = getGradeRet()
 	ldir = lab['dir']
+	studentDir = os.path.join(ldir, student)
 	binpath = part['binary']
 	srcpath = part['source']
 	compRet = getCompileRet()
 	runRet = getRunRet()
 	
 	if grading:
-		binpath = os.path.join(ldir, part['binary'])
-		srcpath = os.path.join(ldir, part['source'])
+		binpath = os.path.join(studentDir, part['binary'])
+		srcpath = os.path.join(studentDir, part['source'])
 	
 	# Compile the code
 	if grading:
@@ -679,7 +696,7 @@ def gradeMakeRun(student, lab, part):
 	
 	return ret
 
-def grade(student, lab, grading=False):
+def grade(student, lab):
 	res = []
 	
 	for part in lab['parts']:
@@ -741,7 +758,7 @@ def grade(student, lab, grading=False):
 		unlink(ret['diffOutput'])
 		unlink(ret['solOutput'])
 	
-	return res
+	return resStr
 
 def about():
 	print globals['name'] + ' ' + globals['version']
@@ -788,18 +805,24 @@ if __name__ == '__main__':
 		student = os.environ.get('USER')
 		grade(student, lab, False)
 	else:
-		print 'Error: grade mode untested'
-		sys.exit(4)
+		# Verify the user is authorized to grade
+		pw = getpass.getpass('Password: ')
+		h = hashlib.sha1(pw).hexdigest()
+		
+		if h != globals['gradepass']:
+			print 'Error: incorrect password'
+			sys.exit(-42)
 		
 		grades = []
 		labdir = lab['dir']
 		
 		for d in os.listdir(labdir):
 			if os.path.isdir(os.path.join(labdir, d)):
-				studentRes = grade(student, lab, True)
+				studentRes = grade(d, lab)
 				
-				for res in studentRes:
-					grades.append(res)
+				grades.append(studentRes)
+				#for res in studentRes:
+				#	grades.append(res)
 		
 		grades.sort()
 		for g in grades:
