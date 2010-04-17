@@ -20,7 +20,8 @@ globals = {
 	'homedir':    '/home/grad/Classes_102/cse150efl',
 	'root':       '/home/grad/Classes_102/cse150efl/webhandin',
 	'instructor': 'Ross Nelson',
-	'gradepass':  '5ab6f1f6d66f169ce64ea565309d2cdd0e1dd283'
+	'gradepass':  '5ab6f1f6d66f169ce64ea565309d2cdd0e1dd283',
+	'moss':       '/home/grad/Classes_102/cse150efl/moss.pl'
 }
 
 def getLab():
@@ -39,13 +40,15 @@ def getLabPart():
 		'name':      '',
 		'source':    '',
 		'sources':   None,
+		'basefiles': [],
 		'binary':    '',
 		'type':      '',
 		'matchtype': '',
 		'solbin':    '',
 		'soltxt':    '',
 		'solution':  '',
-		'Makefile':  ''
+		'Makefile':  '',
+		'mossglob':  ''
 	}
 
 def getGradeRet():
@@ -94,6 +97,8 @@ lab7part1['binary'] = 'a.out'
 lab7part1['type'] = 'intmatch'
 lab7part1['matchtype'] = 'static'
 lab7part1['solution'] = 681
+lab7part1['basefiles'] = []
+lab7part1['mossglob'] = getLabDir('7') + '/*/*.f9?'
 lab7 = getLab()
 #lab7['complete'] = True
 lab7['num'] = 7
@@ -111,6 +116,8 @@ lab8part1['sources'] = [ '~cse150efl/files/week8-main.f95' ]
 lab8part1['binary'] = 'a.out'
 lab8part1['type'] = 'binmatch'
 lab8part1['solbin'] = getBinaryPath('week8-reference')
+lab8part1['basefiles'] = []
+lab8part1['mossglob'] = getLabDir('8') + '/*/*.f9?'
 lab8 = getLab()
 lab8['complete'] = True
 lab8['num'] = 8
@@ -128,6 +135,8 @@ lab9part1['sources'] = [ '~cse150efl/files/week9-main.f95' ]
 lab9part1['binary'] = 'a.out'
 lab9part1['type'] = 'binmatch'
 lab9part1['solbin'] = getBinaryPath('week9-reference')
+lab9part1['basefiles'] = ['/home/grad/Classes_102/cse150efl/public_html/labs/9/week9.f95']
+lab9part1['mossglob'] = getLabDir('9') + '/*/*.f9?'
 lab9 = getLab()
 lab9['complete'] = True
 lab9['num'] = 9
@@ -144,6 +153,8 @@ lab10part1['source'] = 'week10.f95'
 lab10part1['Makefile'] = '/home/grad/Classes_102/cse150efl/files/Makefile.week10'
 lab10part1['binary'] = 'week10'
 lab10part1['type'] = 'make-run'
+lab10part1['basefiles'] = ['/home/grad/Classes_102/cse150efl/public_html/labs/10/week10-help.f90']
+lab10part1['mossglob'] = getLabDir('10') + '/*/*.f9?'
 lab10part2 = getLabPart()
 lab10part2['name'] = 'ex2'
 lab10part2['source'] = 'week11.f95'
@@ -174,6 +185,7 @@ assignments.append(lab10)
 # Deal with command line arguments
 grading = False
 verbose = False
+moss = False
 showHelp = False
 assignment = None # len(assignments) # default assignment
 
@@ -193,6 +205,8 @@ if len(sys.argv) > 1:
 				grading = True
 			if arg == '-v':
 				verbose = True
+			if arg == '-m':
+				moss = True
 			if arg == '-h' or arg == '--help':
 				showHelp = True
 		else:
@@ -801,7 +815,7 @@ if __name__ == '__main__':
 		sys.exit(3)
 	
 	# Do the actual testing/grading
-	if not grading:
+	if not grading and not moss:
 		student = os.environ.get('USER')
 		grade(student, lab, False)
 	else:
@@ -813,17 +827,27 @@ if __name__ == '__main__':
 			print 'Error: incorrect password'
 			sys.exit(-42)
 		
-		grades = []
-		labdir = lab['dir']
+		if grading:
+			grades = []
+			labdir = lab['dir']
 		
-		for d in os.listdir(labdir):
-			if os.path.isdir(os.path.join(labdir, d)):
-				studentRes = grade(d, lab)
+			for d in os.listdir(labdir):
+				if os.path.isdir(os.path.join(labdir, d)):
+					studentRes = grade(d, lab)
 				
-				grades.append(studentRes)
-				#for res in studentRes:
-				#	grades.append(res)
+					grades.append(studentRes)
+					#for res in studentRes:
+					#	grades.append(res)
 		
-		grades.sort()
-		for g in grades:
-			print g
+			grades.sort()
+			for g in grades:
+				print g
+		elif moss:
+			for p in lab['parts']:
+				if p['mossglob'] != '':
+					command = globals['moss'] + ' -c ' + lab['shortname'] + p['name'] + ' -l fortran -m 3 '
+					for b in p['basefiles']:
+						command = command + ' -b ' + b + ' '
+					command = command + p['mossglob']
+				
+					subprocess.call(command, shell=True)
