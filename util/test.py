@@ -8,20 +8,65 @@ import subprocess
 import tempfile
 
 
+######################################################
+##  ABOUT: csgrade grade script v0.0.2.1            ##
+##         Copyright (C) 2010 Ross Nelson           ##
+##                                                  ##
+##  USE:   Two sections require use work; both are  ##
+##         denoted with big blocks like this. You   ##
+##         need to fill in variables inside the     ##
+##         globals array as well as specify the     ##
+##         assignments. Future versions will use    ##
+##         a configuration file for this, but for   ##
+##         now it requires changing the script      ##
+######################################################
+
+
+
 # Script configuration
 globals = {
-	'name':       'cse@unl tester',
-	'version':    '0.0.2',
-	'author':     'Ross Nelson <rnelson@cse>',
+	'name':       'csgrade test/grade script',
+	'version':    '0.0.2.1',
+	'author':     'Ross Nelson <http://github.com/rnelson>',
 	'copyright':  'Copyright (C) 2010 Ross Nelson',
 	'license':    'BSD License (http://opensource.org/licenses/bsd-license.php)',
-	'compiler':   '/usr/bin/gfortran',
-	'make':       '/usr/bin/make',
-	'homedir':    '/home/grad/Classes_102/cse150efl',
-	'root':       '/home/grad/Classes_102/cse150efl/webhandin',
-	'instructor': 'Ross Nelson',
-	'gradepass':  '5baa61e4c9b93f3f0682250b6cf8331b7ee68fd8',
-	'moss':       '/home/grad/Classes_102/cse150efl/moss.pl'
+	
+	#####################################################
+	##  The following variables need to be configured  ##
+	##  before you can use the script.                 ##
+	#####################################################
+	
+	# Set this to your compiler, e.g., /usr/bin/cc /usr/bin/gfortran
+	'compiler':   '',
+	
+	# Set this to your chosen make program, e.g, /usr/bin/make
+	'make':       '',
+	
+	# Set this to your home directory; it expects a 'bin' directory to
+	# exists underneath that holds solution files, e.g.,
+	#                         /home/grad/Classes_102/cse150efl
+	'homedir':    '',
+	
+	# Set this to the root of submitted files. This is the biggest part
+	# that makes this script not useful outside of UNL's CSE department
+	# right now as it's tied to how CSE submits files. csgrade is designed
+	# to eventually function as a file submission, assignment testing/grading,
+	# and ABET sampling system, but for now it will require some hacking
+	# to make it more generic. e.g.,
+	#                         /home/grad/Classes_102/cse150efl/webhandin
+	'root':       '',
+	
+	# Set this to your name
+	'instructor': '',
+	
+	# Set this to your password for grading; run gradingpasswd.py to generate
+	# a password ("password" = '5baa61e4c9b93f3f0682250b6cf8331b7ee68fd8')
+	'gradepass':  '',
+	
+	# Set this to the location of a moss.pl script to use MOSS for cheating
+	# detection, e.g.,
+	#                         /home/grad/Classes_102/cse150efl/moss.pl
+	'moss':       ''
 }
 
 def getLab():
@@ -88,125 +133,102 @@ def getLabDir(lab):
 def getBinaryPath(binaryName):
 	return os.path.join(os.path.join(globals['homedir'], 'bin'), binaryName)
 
-# Assignments
-## Lab 7
-lab7part1 = getLabPart()
-lab7part1['name'] = 'ex1'
-lab7part1['source'] = 'week7-ex1.f95'
-lab7part1['binary'] = 'a.out'
-lab7part1['type'] = 'intmatch'
-lab7part1['matchtype'] = 'static'
-lab7part1['solution'] = 681
-lab7part1['basefiles'] = []
-lab7part1['mossglob'] = getLabDir('7') + '/*/*.f9?'
-lab7 = getLab()
-#lab7['complete'] = True
-lab7['num'] = 7
-lab7['name'] = 'Week 7'
-lab7['shortname'] = 'wk7'
-lab7['numparts'] = 1
-lab7['dir'] = getLabDir('7')
-lab7['parts'] = []
-lab7['parts'].append(lab7part1)
-## Lab 8
-lab8part1 = getLabPart()
-lab8part1['name'] = 'ex1'
-lab8part1['source'] = 'week8.f95'
-lab8part1['sources'] = [ '~cse150efl/files/week8-main.f95' ]
-lab8part1['binary'] = 'a.out'
-lab8part1['type'] = 'binmatch'
-lab8part1['solbin'] = getBinaryPath('week8-reference')
-lab8part1['basefiles'] = []
-lab8part1['mossglob'] = getLabDir('8') + '/*/*.f9?'
-lab8 = getLab()
-lab8['complete'] = True
-lab8['num'] = 8
-lab8['name'] = 'Week 8'
-lab8['shortname'] = 'wk8'
-lab8['numparts'] = 1
-lab8['dir'] = getLabDir('8')
-lab8['parts'] = []
-lab8['parts'].append(lab8part1)
-## Lab 9
-lab9part1 = getLabPart()
-lab9part1['name'] = 'ex1'
-lab9part1['source'] = 'week9.f95'
-lab9part1['sources'] = [ '~cse150efl/files/week9-main.f95' ]
-lab9part1['binary'] = 'a.out'
-lab9part1['type'] = 'binmatch'
-lab9part1['solbin'] = getBinaryPath('week9-reference')
-lab9part1['basefiles'] = ['/home/grad/Classes_102/cse150efl/public_html/labs/9/week9.f95']
-lab9part1['mossglob'] = getLabDir('9') + '/*/*.f9?'
-lab9 = getLab()
-lab9['complete'] = True
-lab9['num'] = 9
-lab9['name'] = 'Week 9'
-lab9['shortname'] = 'wk9'
-lab9['numparts'] = 1
-lab9['dir'] = getLabDir('9')
-lab9['parts'] = []
-lab9['parts'].append(lab9part1)
-## Lab 10
-lab10part1 = getLabPart()
-lab10part1['name'] = 'ex1'
-lab10part1['source'] = 'week10.f95'
-lab10part1['Makefile'] = '/home/grad/Classes_102/cse150efl/files/Makefile.week10'
-lab10part1['binary'] = 'week10'
-lab10part1['type'] = 'make-run'
-lab10part1['basefiles'] = ['/home/grad/Classes_102/cse150efl/public_html/labs/10/week10-help.f90']
-lab10part1['mossglob'] = getLabDir('10') + '/*/*.f9?'
-lab10part2 = getLabPart()
-lab10part2['name'] = 'ex2'
-lab10part2['source'] = 'week11.f95'
-lab10part2['sources'] = [ '~cse150efl/files/week11-main.f95' ]
-lab10part2['binary'] = 'a.out'
-lab10part2['type'] = 'binmatch'
-lab10part2['solbin'] = getBinaryPath('week11-reference')
-lab10 = getLab()
-lab10['complete'] = True
-lab10['num'] = 10
-lab10['name'] = 'Week 10'
-lab10['shortname'] = 'wk10'
-lab10['numparts'] = 1
-lab10['dir'] = getLabDir('10')
-lab10['parts'] = []
-lab10['parts'].append(lab10part1)
-lab10['parts'].append(lab10part2)
-## Lab 15
-lab15part1 = getLabPart()
-lab15part1['name'] = 'exA'
-lab15part1['source'] = 'week15-a.f95'
-lab15part1['sources'] = [ '~cse150efl/files/week15-a-main.f95' ]
-lab15part1['binary'] = 'a.out'
-lab15part1['type'] = 'binmatch'
-lab15part1['solbin'] = getBinaryPath('week15-a-reference')
-lab15part1['basefiles'] = ['~cse150efl/files/week15-a-main.f95']
-lab15part1['mossglob'] = getLabDir('15') + '/*/*.f9?'
-lab15part2 = getLabPart()
-lab15part2['name'] = 'exB'
-lab15part2['source'] = 'week15-b.f95'
-lab15part2['binary'] = 'a.out'
-lab15part2['type'] = 'binmatch'
-lab15part2['solbin'] = getBinaryPath('week15-b-reference')
-lab15 = getLab()
-lab15['complete'] = True
-lab15['num'] = 15
-lab15['name'] = 'Week 15'
-lab15['shortname'] = 'wk15'
-lab15['numparts'] = 1
-lab15['dir'] = getLabDir('15')
-lab15['parts'] = []
-lab15['parts'].append(lab15part1)
-lab15['parts'].append(lab15part2)
 
-assignments = []
-#for i in xrange(6):
-#	assignments.append(getLab())
-assignments.append(lab7)
-assignments.append(lab8)
-assignments.append(lab9)
-assignments.append(lab10)
-assignments.append(lab15)
+#################################################################
+##  Create a list named 'assignments' here that is made up of  ##
+##  'lab' and 'labPart' lists that describe the individual     ##
+##  assignments. I have included a commented example showing   ##
+##  basic use.                                                 ##
+#################################################################
+
+
+
+# # Compare the output, expecting only an integer
+# # to be printed to the screen
+# part = getLabPart()
+# part['name'] = 'ex1'
+# aprt['source'] = 'week7-ex1.f95'
+# part['binary'] = 'a.out'
+# aprt['type'] = 'intmatch'
+# part['matchtype'] = 'static'
+# part['solution'] = 681
+# part['basefiles'] = []
+# part['mossglob'] = getLabDir('7') + '/*/*.f9?'
+# lab7 = getLab()
+# lab7['complete'] = True
+# lab7['num'] = 7
+# lab7['name'] = 'Week 7'
+# lab7['shortname'] = 'wk7'
+# lab7['numparts'] = 1
+# lab7['dir'] = getLabDir('7')
+# lab7['parts'] = []
+# lab7['parts'].append(part)
+# 
+# 
+# # Compare the output to that of a reference program;
+# # there is also a shared main()-type file compiled
+# # in with student source
+# part = getLabPart()
+# part['name'] = 'ex1'
+# part['source'] = 'week8.f95'
+# part['sources'] = [ '~cse150efl/files/week8-main.f95' ]
+# part['binary'] = 'a.out'
+# part['type'] = 'binmatch'
+# part['solbin'] = getBinaryPath('week8-reference')
+# part['basefiles'] = []
+# part['mossglob'] = getLabDir('8') + '/*/*.f9?'
+# lab8 = getLab()
+# lab8['complete'] = True
+# lab8['num'] = 8
+# lab8['name'] = 'Week 8'
+# lab8['shortname'] = 'wk8'
+# lab8['numparts'] = 1
+# lab8['dir'] = getLabDir('8')
+# lab8['parts'] = []
+# lab8['parts'].append(part)
+# 
+# 
+# # A lab can have multiple parts, and they can be graded different
+# # ways -- part 1 is compiled with a Makefile and part 2 is a simple
+# # binary output comparison. Note the 'numparts' variable. I'm not
+# # entirely sure this is being used, and it shouldn't. I plan to do
+# # a complete overhaul of the assignment specification stuff so I'm
+# # not going to worry about it for now.
+# lab10 = getLab()
+# lab10['complete'] = True
+# lab10['num'] = 10
+# lab10['name'] = 'Week 10'
+# lab10['shortname'] = 'wk10'
+# lab10['numparts'] = 2
+# lab10['dir'] = getLabDir('10')
+# lab10['parts'] = []
+# part = getLabPart()
+# part['name'] = 'ex1'
+# part['source'] = 'week10.f95'
+# part['Makefile'] = '/home/grad/Classes_102/cse150efl/files/Makefile.week10'
+# part['binary'] = 'week10'
+# part['type'] = 'make-run'
+# part['basefiles'] = ['/home/grad/Classes_102/cse150efl/public_html/labs/10/week10-help.f90']
+# part['mossglob'] = getLabDir('10') + '/*/*.f9?'
+# lab10['parts'].append(part)
+# part = getLabPart()
+# part['name'] = 'ex2'
+# part['source'] = 'week11.f95'
+# part['sources'] = [ '~cse150efl/files/week11-main.f95' ]
+# part['binary'] = 'a.out'
+# part['type'] = 'binmatch'
+# part['solbin'] = getBinaryPath('week11-reference')
+# lab10['parts'].append(part)
+# 
+# # Now create the actual assignments list and put the
+# # assignments into it
+# assignments = []
+# assignments.append(lab7)
+# assignments.append(lab8)
+# assignments.append(lab10)
+
+
+
 
 
 # Deal with command line arguments

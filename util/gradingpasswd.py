@@ -3,8 +3,8 @@ import getpass
 import hashlib
 import sys
 
-p1 = getpass.getpass('Enter password: ') #raw_input('Enter password: ')
-p2 = getpass.getpass('Enter password again: ') #raw_input('Enter password again: ')
+p1 = getpass.getpass('Enter password: ')
+p2 = getpass.getpass('Enter password again: ')
 
 if p1 != p2:
 	print 'Error: passwords do not match'
