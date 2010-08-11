@@ -2,7 +2,6 @@
 			<legend><?php echo $formTitle; ?></legend>
 			<p></p>
 			<input type="hidden" name="userType[id]" value="<?php echo $_POST['userType']['id']; ?>" />
-			<input type="hidden" name="currentMask" value="<?php echo $_POST['userType']['privs']; ?>" />
 			<input type="hidden" name="submitted" value="<?php echo $_POST['submitted']; ?>" />
 			<div class="form-element">
 				<label for="userType[name]" class="form-element-label">Name:</label>

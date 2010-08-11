@@ -131,6 +131,9 @@ INSERT INTO userType(name, privs) VALUES ('Guest', 1);
 INSERT INTO userType(name, privs) VALUES ('User', 3);
 INSERT INTO userType(name, privs) VALUES ('Administrator', 7);
 
+INSERT INTO instructorType(name) VALUES ('Instructor');
+INSERT INTO instructorType(name) VALUES ('Teaching Assistant');
+
 
 # TODO: replace these with web config
 INSERT INTO user(userTypeId, username, passwd, firstName, lastName, email) VALUES (3, 'admin', '5baa61e4c9b93f3f0682250b6cf8331b7ee68fd8', 'Local', 'Administrator', 'admin@example.com'); # pass = 'password'

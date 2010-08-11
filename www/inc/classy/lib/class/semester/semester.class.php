@@ -6,6 +6,18 @@
  * semester
  */
 class semester extends semesterGenerated {
+	public function getLink($root=$GLOBALS['rootPath'], $admin=TRUE) {
+		$showPath = '';
+		
+		if ($admin) {
+			$showPath = 'admin/semester/show/';
+		}
+		
+		$link = '<a href="' . $root . $showPath . '?id=' . $this->id . '">' $this->name . '</a>';
+		
+		return $link;
+	}
+	
 	public function getClasses() {
 		$sql = 'SELECT * FROM singleClass WHERE semesterId=:id';
 		

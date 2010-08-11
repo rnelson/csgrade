@@ -20,7 +20,7 @@ globals = {
 	'homedir':    '/home/grad/Classes_102/cse150efl',
 	'root':       '/home/grad/Classes_102/cse150efl/webhandin',
 	'instructor': 'Ross Nelson',
-	'gradepass':  '5ab6f1f6d66f169ce64ea565309d2cdd0e1dd283',
+	'gradepass':  '5baa61e4c9b93f3f0682250b6cf8331b7ee68fd8',
 	'moss':       '/home/grad/Classes_102/cse150efl/moss.pl'
 }
 
@@ -172,6 +172,32 @@ lab10['dir'] = getLabDir('10')
 lab10['parts'] = []
 lab10['parts'].append(lab10part1)
 lab10['parts'].append(lab10part2)
+## Lab 15
+lab15part1 = getLabPart()
+lab15part1['name'] = 'exA'
+lab15part1['source'] = 'week15-a.f95'
+lab15part1['sources'] = [ '~cse150efl/files/week15-a-main.f95' ]
+lab15part1['binary'] = 'a.out'
+lab15part1['type'] = 'binmatch'
+lab15part1['solbin'] = getBinaryPath('week15-a-reference')
+lab15part1['basefiles'] = ['~cse150efl/files/week15-a-main.f95']
+lab15part1['mossglob'] = getLabDir('15') + '/*/*.f9?'
+lab15part2 = getLabPart()
+lab15part2['name'] = 'exB'
+lab15part2['source'] = 'week15-b.f95'
+lab15part2['binary'] = 'a.out'
+lab15part2['type'] = 'binmatch'
+lab15part2['solbin'] = getBinaryPath('week15-b-reference')
+lab15 = getLab()
+lab15['complete'] = True
+lab15['num'] = 15
+lab15['name'] = 'Week 15'
+lab15['shortname'] = 'wk15'
+lab15['numparts'] = 1
+lab15['dir'] = getLabDir('15')
+lab15['parts'] = []
+lab15['parts'].append(lab15part1)
+lab15['parts'].append(lab15part2)
 
 assignments = []
 #for i in xrange(6):
@@ -180,6 +206,7 @@ assignments.append(lab7)
 assignments.append(lab8)
 assignments.append(lab9)
 assignments.append(lab10)
+assignments.append(lab15)
 
 
 # Deal with command line arguments
@@ -256,8 +283,11 @@ def buildFileList(studentSource, part):
 	
 	return fileList
 
-def make(student, lab, part, src, showOutput=False, outputFilename='', make=globals['make']):
+def make(student, lab, part, src, showOutput=False, outputFilename='', make=globals['make'], cd=False, studentDir=''):
 	ret = getCompileRet()
+	
+	if cd:
+		os.chdir(studentDir)
 	
 	# If the file doesn't exist, save time and flag it as such here
 	if not exists(src):
@@ -271,15 +301,15 @@ def make(student, lab, part, src, showOutput=False, outputFilename='', make=glob
 		return ret
 	
 	# Base compilation command
-	command = 'make -f ' + part['Makefile'] + ' clean >/dev/null 2>/dev/null && make -f ' + part['Makefile']
+	command = make + ' -f ' + part['Makefile'] + ' clean >/dev/null 2>/dev/null && ' + make + ' -f ' + part['Makefile']
 	
 	# What do we do with the output?
 	out = ''
 	outStdout = ''
 	outStderr = ''
 	
-	if not showOutput:
-		out = '>/dev/null'
+	if not showOutput or grading:
+		out = '>/dev/null 2>/dev/null'
 	else:
 		outStdout = mktmpnam()
 		outStderr = mktmpnam()
@@ -666,14 +696,13 @@ def gradeMakeRun(student, lab, part):
 	# Variables
 	ret = getGradeRet()
 	ldir = lab['dir']
-	binpath = part['binary']
 	
 	compRet = getCompileRet()
 	runRet = getRunRet()
 	
 	# Compile the code
 	if grading:
-		compRet = make(student, lab, part, binpath, srcpath)
+		compRet = make(student, lab, part, part['source'], False, ret['compOutput'], globals['make'], True, os.path.join(ldir, student))
 	else:
 		ret['compOutput'] = mktmpnam()
 		compRet = make(student, lab, part, part['source'], True, ret['compOutput'])
@@ -683,6 +712,7 @@ def gradeMakeRun(student, lab, part):
 		ret['result'] = compRet['result']
 		ret['output'] = ret['compOutput']
 		
+		#print '>>> Error running make'
 		if ret['result'] == '(-) "' + part['source'] + '" does not exist':
 			ret['output'] = ''
 		return ret
@@ -772,7 +802,7 @@ def grade(student, lab):
 		unlink(ret['diffOutput'])
 		unlink(ret['solOutput'])
 	
-	return resStr
+	return res
 
 def about():
 	print globals['name'] + ' ' + globals['version']
@@ -817,7 +847,7 @@ if __name__ == '__main__':
 	# Do the actual testing/grading
 	if not grading and not moss:
 		student = os.environ.get('USER')
-		grade(student, lab, False)
+		grade(student, lab)
 	else:
 		# Verify the user is authorized to grade
 		pw = getpass.getpass('Password: ')
@@ -835,9 +865,9 @@ if __name__ == '__main__':
 				if os.path.isdir(os.path.join(labdir, d)):
 					studentRes = grade(d, lab)
 				
-					grades.append(studentRes)
-					#for res in studentRes:
-					#	grades.append(res)
+					#grades.append(studentRes)
+					for res in studentRes:
+						grades.append(res)
 		
 			grades.sort()
 			for g in grades:

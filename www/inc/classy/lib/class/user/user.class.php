@@ -6,6 +6,18 @@
  * user
  */
 class user extends userGenerated {
+	public function getLink($root=$GLOBALS['rootPath'], $admin=TRUE) {
+		$showPath = '';
+		
+		if ($admin) {
+			$showPath = 'admin/user/show/';
+		}
+		
+		$link = '<a href="' . $root . $showPath . '?id=' . $this->id . '">' $this->getRealName() . '</a>';
+		
+		return $link;
+	}
+	
 	public function getRealName() {
 		$realName = '';
 		$firstName = trim($this->firstName);

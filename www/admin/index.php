@@ -8,6 +8,7 @@
 ?>
 
 <ol>
+	<li><a href="instructorType/">Instructor Types</a></li>
 	<li><a href="priv/">Privileges</a></li>
 	<li><a href="userType/">User Types</a></li>
 	<li><a href="user/">Users</a></li>
