@@ -6,6 +6,7 @@ import os
 import sys
 import subprocess
 import tempfile
+from config import Config
 
 
 ######################################################
@@ -21,80 +22,6 @@ import tempfile
 ##         now it requires changing the script      ##
 ######################################################
 
-
-
-# Script configuration
-globals = {
-	'name':       'csgrade test/grade script',
-	'version':    '0.0.2.1',
-	'author':     'Ross Nelson <http://github.com/rnelson>',
-	'copyright':  'Copyright (C) 2010 Ross Nelson',
-	'license':    'BSD License (http://opensource.org/licenses/bsd-license.php)',
-	
-	#####################################################
-	##  The following variables need to be configured  ##
-	##  before you can use the script.                 ##
-	#####################################################
-	
-	# Set this to your compiler, e.g., /usr/bin/cc /usr/bin/gfortran
-	'compiler':   '',
-	
-	# Set this to your chosen make program, e.g, /usr/bin/make
-	'make':       '',
-	
-	# Set this to your home directory; it expects a 'bin' directory to
-	# exists underneath that holds solution files, e.g.,
-	#                         /home/grad/Classes_102/cse150efl
-	'homedir':    '',
-	
-	# Set this to the root of submitted files. This is the biggest part
-	# that makes this script not useful outside of UNL's CSE department
-	# right now as it's tied to how CSE submits files. csgrade is designed
-	# to eventually function as a file submission, assignment testing/grading,
-	# and ABET sampling system, but for now it will require some hacking
-	# to make it more generic. e.g.,
-	#                         /home/grad/Classes_102/cse150efl/webhandin
-	'root':       '',
-	
-	# Set this to your name
-	'instructor': '',
-	
-	# Set this to your password for grading; run gradingpasswd.py to generate
-	# a password ("password" = '5baa61e4c9b93f3f0682250b6cf8331b7ee68fd8')
-	'gradepass':  '',
-	
-	# Set this to the location of a moss.pl script to use MOSS for cheating
-	# detection, e.g.,
-	#                         /home/grad/Classes_102/cse150efl/moss.pl
-	'moss':       ''
-}
-
-def getLab():
-	return {
-		'complete':  False,
-		'num':       '',
-		'name':      '',
-		'shortname': '',
-		'numparts':  '',
-		'dir':       '',
-		'parts':     None
-	}
-
-def getLabPart():
-	return {
-		'name':      '',
-		'source':    '',
-		'sources':   None,
-		'basefiles': [],
-		'binary':    '',
-		'type':      '',
-		'matchtype': '',
-		'solbin':    '',
-		'soltxt':    '',
-		'solution':  '',
-		'Makefile':  '',
-		'mossglob':  ''
-	}
 
 def getGradeRet():
 	return {
@@ -128,110 +55,14 @@ def getDiffRet():
 	}
 
 def getLabDir(lab):
-	return os.path.join(os.path.join(globals['root'], lab), 'unix')
+	return os.path.join(os.path.join(c.submittedFilesRoot, lab), 'unix')
 
 def getBinaryPath(binaryName):
-	return os.path.join(os.path.join(globals['homedir'], 'bin'), binaryName)
-
-
-#################################################################
-##  Create a list named 'assignments' here that is made up of  ##
-##  'lab' and 'labPart' lists that describe the individual     ##
-##  assignments. I have included a commented example showing   ##
-##  basic use.                                                 ##
-#################################################################
-
-
-
-# # Compare the output, expecting only an integer
-# # to be printed to the screen
-# part = getLabPart()
-# part['name'] = 'ex1'
-# aprt['source'] = 'week7-ex1.f95'
-# part['binary'] = 'a.out'
-# aprt['type'] = 'intmatch'
-# part['matchtype'] = 'static'
-# part['solution'] = 681
-# part['basefiles'] = []
-# part['mossglob'] = getLabDir('7') + '/*/*.f9?'
-# lab7 = getLab()
-# lab7['complete'] = True
-# lab7['num'] = 7
-# lab7['name'] = 'Week 7'
-# lab7['shortname'] = 'wk7'
-# lab7['numparts'] = 1
-# lab7['dir'] = getLabDir('7')
-# lab7['parts'] = []
-# lab7['parts'].append(part)
-# 
-# 
-# # Compare the output to that of a reference program;
-# # there is also a shared main()-type file compiled
-# # in with student source
-# part = getLabPart()
-# part['name'] = 'ex1'
-# part['source'] = 'week8.f95'
-# part['sources'] = [ '~cse150efl/files/week8-main.f95' ]
-# part['binary'] = 'a.out'
-# part['type'] = 'binmatch'
-# part['solbin'] = getBinaryPath('week8-reference')
-# part['basefiles'] = []
-# part['mossglob'] = getLabDir('8') + '/*/*.f9?'
-# lab8 = getLab()
-# lab8['complete'] = True
-# lab8['num'] = 8
-# lab8['name'] = 'Week 8'
-# lab8['shortname'] = 'wk8'
-# lab8['numparts'] = 1
-# lab8['dir'] = getLabDir('8')
-# lab8['parts'] = []
-# lab8['parts'].append(part)
-# 
-# 
-# # A lab can have multiple parts, and they can be graded different
-# # ways -- part 1 is compiled with a Makefile and part 2 is a simple
-# # binary output comparison. Note the 'numparts' variable. I'm not
-# # entirely sure this is being used, and it shouldn't. I plan to do
-# # a complete overhaul of the assignment specification stuff so I'm
-# # not going to worry about it for now.
-# lab10 = getLab()
-# lab10['complete'] = True
-# lab10['num'] = 10
-# lab10['name'] = 'Week 10'
-# lab10['shortname'] = 'wk10'
-# lab10['numparts'] = 2
-# lab10['dir'] = getLabDir('10')
-# lab10['parts'] = []
-# part = getLabPart()
-# part['name'] = 'ex1'
-# part['source'] = 'week10.f95'
-# part['Makefile'] = '/home/grad/Classes_102/cse150efl/files/Makefile.week10'
-# part['binary'] = 'week10'
-# part['type'] = 'make-run'
-# part['basefiles'] = ['/home/grad/Classes_102/cse150efl/public_html/labs/10/week10-help.f90']
-# part['mossglob'] = getLabDir('10') + '/*/*.f9?'
-# lab10['parts'].append(part)
-# part = getLabPart()
-# part['name'] = 'ex2'
-# part['source'] = 'week11.f95'
-# part['sources'] = [ '~cse150efl/files/week11-main.f95' ]
-# part['binary'] = 'a.out'
-# part['type'] = 'binmatch'
-# part['solbin'] = getBinaryPath('week11-reference')
-# lab10['parts'].append(part)
-# 
-# # Now create the actual assignments list and put the
-# # assignments into it
-# assignments = []
-# assignments.append(lab7)
-# assignments.append(lab8)
-# assignments.append(lab10)
-
-
-
+	return os.path.join(os.path.join(c.homeDirectory, 'bin'), binaryName)
 
 
 # Deal with command line arguments
+c = Config()
 grading = False
 verbose = False
 moss = False
@@ -290,8 +121,9 @@ def unlink(filename):
 		os.unlink(filename)
 
 def findLab(number):
-	for l in assignments:
-		if l['num'] == number:
+	for l in c.labs:
+		if int(l['num']) == int(number):
+			
 			return l
 	
 	return None
@@ -305,7 +137,7 @@ def buildFileList(studentSource, part):
 	
 	return fileList
 
-def make(student, lab, part, src, showOutput=False, outputFilename='', make=globals['make'], cd=False, studentDir=''):
+def make(student, lab, part, src, showOutput=False, outputFilename='', make=c.makeBinary, cd=False, studentDir=''):
 	ret = getCompileRet()
 	
 	if cd:
@@ -372,7 +204,7 @@ def make(student, lab, part, src, showOutput=False, outputFilename='', make=glob
 	
 	return ret
 
-def compile(student, lab, part, bin, src, showOutput=False, outputFilename='', compiler=globals['compiler']):
+def compile(student, lab, part, bin, src, showOutput=False, outputFilename='', compiler=c.compilerBinary):
 	ret = getCompileRet()
 	
 	# If the file doesn't exist, save time and flag it as such here
@@ -724,7 +556,7 @@ def gradeMakeRun(student, lab, part):
 	
 	# Compile the code
 	if grading:
-		compRet = make(student, lab, part, part['source'], False, ret['compOutput'], globals['make'], True, os.path.join(ldir, student))
+		compRet = make(student, lab, part, part['source'], False, ret['compOutput'], c.makeBinary, True, os.path.join(ldir, student))
 	else:
 		ret['compOutput'] = mktmpnam()
 		compRet = make(student, lab, part, part['source'], True, ret['compOutput'])
@@ -827,14 +659,14 @@ def grade(student, lab):
 	return res
 
 def about():
-	print globals['name'] + ' ' + globals['version']
-	print globals['author']
-	print 'Licensed under ' + globals['license']
+	print c.name + ' ' + c.version
+	print c.author
+	print 'Licensed under ' + c.license
 	print ''
-	print 'Instructor:            ' + globals['instructor']
-	print 'Compiler:              ' + globals['compiler']
-	print 'Home directory:        ' + globals['homedir']
-	print 'Code root directory:   ' + globals['root']
+	print 'Instructor:            ' + c.instructor
+	print 'Compiler:              ' + c.compilerBinary
+	print 'Home directory:        ' + c.homeDirectory
+	print 'Code root directory:   ' + c.submittedFilesRoot
 	print ''
 	print ''
 
@@ -842,6 +674,7 @@ def help():
 	print 'usage: ' + __file__ + ' [options] lab'
 	print '   -h | --help:     Show this help'
 	print '   -g:              Use grading mode (instructor only)'
+	print '   -m:              Send code to MOSS (instructor only)'
 	print '   -v:              Use verbose mode'
 	print ''
 	print '"lab" is the number for the lab you wish to test. You can'
@@ -859,7 +692,6 @@ if __name__ == '__main__':
 	lab = findLab(assignment)
 	if lab == None:
 		print 'Error: that lab does not exist'
-		#print 'Error: cannot find lab structure; notify ' + globals['instructor']
 		sys.exit(2)
 	
 	if not lab['complete']:
@@ -875,7 +707,7 @@ if __name__ == '__main__':
 		pw = getpass.getpass('Password: ')
 		h = hashlib.sha1(pw).hexdigest()
 		
-		if h != globals['gradepass']:
+		if h != c.gradingPassword:
 			print 'Error: incorrect password'
 			sys.exit(-42)
 		
@@ -887,7 +719,6 @@ if __name__ == '__main__':
 				if os.path.isdir(os.path.join(labdir, d)):
 					studentRes = grade(d, lab)
 				
-					#grades.append(studentRes)
 					for res in studentRes:
 						grades.append(res)
 		
@@ -897,7 +728,7 @@ if __name__ == '__main__':
 		elif moss:
 			for p in lab['parts']:
 				if p['mossglob'] != '':
-					command = globals['moss'] + ' -c ' + lab['shortname'] + p['name'] + ' -l fortran -m 3 '
+					command = c.mossBinary + ' -c ' + lab['shortname'] + p['name'] + ' -l ' + c.mossLanguage + '-m 3 '
 					for b in p['basefiles']:
 						command = command + ' -b ' + b + ' '
 					command = command + p['mossglob']

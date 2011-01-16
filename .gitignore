@@ -1,2 +1,5 @@
 .DS_Store
 *.komodoproject
+*.class
+*.pyc
+csgrade.test.conf.xml
