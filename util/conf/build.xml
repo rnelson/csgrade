@@ -54,7 +54,8 @@
 			<fileset file="${lib.path}/*.jar"/>
 		</copy>
 		-->
-		<jar jarfile="${dist.path}/${product}-${version}.jar" basedir="${build.path}">
+		<!-- <jar jarfile="${dist.path}/${product}-${version}.jar" basedir="${build.path}"> -->
+		<jar jarfile="${dist.path}/${product}.jar" basedir="${build.path}">
 			<manifest>
 				<attribute name="Main-Class" value="org.pretendamazing.csgrade.util.conf.Main"/>
 				<attribute name="Class-Path" value="${manifest.classpath}"/>

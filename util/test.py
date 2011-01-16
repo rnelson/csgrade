@@ -9,18 +9,18 @@ import tempfile
 from config import Config
 
 
-######################################################
-##  ABOUT: csgrade grade script v0.0.2.1            ##
-##         Copyright (C) 2010 Ross Nelson           ##
-##                                                  ##
-##  USE:   Two sections require use work; both are  ##
-##         denoted with big blocks like this. You   ##
-##         need to fill in variables inside the     ##
-##         globals array as well as specify the     ##
-##         assignments. Future versions will use    ##
-##         a configuration file for this, but for   ##
-##         now it requires changing the script      ##
-######################################################
+###########################################################################
+##  ABOUT: csgrade grade script v0.1                                     ##
+##         Copyright (C) 2010-2011 Ross Nelson                           ##
+##                                                                       ##
+##  USE:   Build and run the configuration program (under conf/) to      ##
+##         configure. Place the file in the same directory as the        ##
+##         scripts.                                                      ##
+##                                                                       ##
+##         util/conf$ ant                                                ##
+##         util/conf$ java -jar dist/conf.jar ../csgrade.test.conf.xml   ##
+##                                                                       ##
+###########################################################################
 
 
 def getGradeRet():
